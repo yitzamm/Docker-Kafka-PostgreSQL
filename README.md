@@ -47,11 +47,27 @@ microservices-lab/
 
 Luego de investigar un poco acerca de las configuraciones básicas de Apache Kafka dentro de Docker Compose, empecé por hacerle modificaciones iniciales al archivo original y así evitar  complicaciones más adelante. Estos cambios incluyeron agregarle broker ID y Kafka listeners para listener mapping, start up y conexiones de red. Adicional, agregué la dependencia faltante en la sección de Kafka UI. Las dependencias juegan un papel importante en el proyecto, por lo que es importante entender bien la relación entre cada componente. En concreto, Kafka depende de Zookeeper, Kafka UI depende de Kafka, Consumer depende de Kafka y Postgres, y API depende de Postgres.
 
+**Docker Compose**
+<img width="1019" height="494" alt="image" src="https://github.com/user-attachments/assets/5c25fefc-7a40-4d3c-979f-1d6029f56c7c" />
+
 El siguiente paso fue crear el servidor de Postgres desde pgAdmin y desde ahí agregar una tabla. Para la tabla seguí el siguiente steps list: Servers > Databases > clientesdb > public > Tables. Una vez en Tables, click derecho Create > Table. Inicié con únicamente 3 valores, ID, nombre y correo, más adelante le agregué varias columnas más. ID es el que lleva primary key, entonces habilité el PK y dentro del Constraints tab, cambié el Identity de ALWAYS a BY DEFAULT, y setié incrementos de 1 con start 1.
+
+**DB Table**
+<img width="896" height="471" alt="image" src="https://github.com/user-attachments/assets/3de227c9-af47-4156-9085-c761f3f44891" />
 
 A continuación, configuré Kafka, creé main.py, producer.py, consumer.py y el UI (html, css y js). La API respondió sin problema desde http://localhost:8000/clientes, sin embargo el UI (http://localhost:8083/) me devolvió un error de CORS. Este ocurre cuando un navegador bloquea una solicitud HTTP a un dominio diferente por motivos de seguridad y es una restricción propia del navegador, en mi caso, http://localhost:8000/clientes != http://localhost:8083 y por tanto detecta un conflicto de origen. Para arreglarlo, habilité cross-origin requests desde main.py.
 
+**CORS error handling**
+<img width="553" height="265" alt="CORS error" src="https://github.com/user-attachments/assets/7a8ea4f4-f762-469d-95b6-c98aea17c200" />
+
+<img width="411" height="244" alt="image" src="https://github.com/user-attachments/assets/8ceacb80-fed0-489c-a2b6-d0b261c70d6c" />
+
 La primer mejora que le quería implementar al proyecto era permitir que el usuario pudiera agregar un cliente desde el UI, dejar que Kafka producer detectara el evento, creara el tópico, y que por último Kafka consumer actualizara la base de datos con el evento recibido. Para que funcionara necesitaba que la API pudiera leer desde la base de datos y enviarle eventos a producer.py. El problema era que el contenedor de producer hacía exit casi inmediatamente después de correr docker compose up. Ahora que producer no le estaba enviando data preescrita a consumer, ocupaba a los 2 siempre arriba y en "listening state". Producer debía escuchar a API y Consumer escuchar a Producer. Con eso en mente, reinventé la conexión a Kafka y reconfiguré el API endpoint.
+
+**Docker Logs**
+<img width="1066" height="139" alt="image" src="https://github.com/user-attachments/assets/98a8f4ad-9071-4e58-86cf-d2dcfeaad2fc" />
+
+
 
 Esto solucionó el auto-exit, pero estaba teniendo errores de backend cuando hacía un insert. Desde inspect, revisé los API responses, status codes y los logs de cada contenedor. Tras revisar más detenidamente los files, logré identificar y reinstalar las dependencias faltantes. Aproveché para agregar una función que permitiera editar y eliminar clientes, estas usan una lógica muy similar y básicamente el mismo recorrido (UI -> API -> Kafka Producer -> Kafka Consumer -> DB). Llegado a este punto edit y delete reflejaban de inmediato los cambios, pero agregar clientes tenía un delay significativo y para visualizarlo tenía que refrescar la ventana del navegador. Lo anterior ocurre porque las mutaciones de información (agregar, editar, eliminar) recorren un Kafka-based pipeline que usa procesamiento asíncrono, para contrarrestarlo, le agregué un delay directamente a la interfaz, suficiente para que el consumer pueda terminar de procesar el evento antes de que el UI pida actualizarse.
 
