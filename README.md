@@ -16,7 +16,7 @@ El propósito principal es demostrar el diseño, comunicación y escalabilidad d
 - **PostgreSQL -** Base de datos relacional
 - **pgAdmin -** Administración visual de la base de datos
 - **HTML / CSS / Javascript -** Interfaz de usuario
-- **Arquitecture de microservicios -** Separación de responsabilidades por servicio
+- **Arquitectura de microservicios -** Separación de responsabilidades por servicio
 
 ## Estructura del proyecto
 
