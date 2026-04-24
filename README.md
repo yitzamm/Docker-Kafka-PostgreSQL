@@ -98,8 +98,9 @@ El otro inconveniente fue propiamente el arranque de Kafka tras reinicios abrupt
  y Postgres, y cambiar el depends on de los otros servicios a depends on: condition: service_healthy. Esto me garantiza una mayor estabilidad y mejor tolerancia ante fallos.
 
 **Healthchecks and Restart Policy**
+<img width="539" height="134" alt="image" src="https://github.com/user-attachments/assets/cfb1b776-fc93-407b-8836-66ae4b0463ff" />
+
 <img width="1452" height="206" alt="image" src="https://github.com/user-attachments/assets/a8ad861e-8ca6-4aa4-aa81-78733da9e368" />
 
-<img width="539" height="134" alt="image" src="https://github.com/user-attachments/assets/cfb1b776-fc93-407b-8836-66ae4b0463ff" />
 
 
