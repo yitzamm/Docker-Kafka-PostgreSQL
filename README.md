@@ -71,6 +71,7 @@ La primer mejora que le quería implementar al proyecto era permitir que el usua
 
 Esto solucionó el auto-exit, pero estaba teniendo errores de backend cuando hacía un insert. Desde inspect, revisé los API responses, status codes y los logs de cada contenedor. Tras revisar más detenidamente los files, logré identificar y reinstalar las dependencias faltantes. Aproveché para agregar una función que permitiera editar y eliminar clientes, estas usan una lógica muy similar y básicamente el mismo recorrido (UI -> API -> Kafka Producer -> Kafka Consumer -> DB). Llegado a este punto edit y delete reflejaban de inmediato los cambios, pero agregar clientes tenía un delay significativo y para visualizarlo tenía que refrescar la ventana del navegador. Lo anterior ocurre porque las mutaciones de información (agregar, editar, eliminar) recorren un Kafka-based pipeline que usa procesamiento asíncrono, para contrarrestarlo, le agregué un delay directamente a la interfaz, suficiente para que el consumer pueda terminar de procesar el evento antes de que el UI pida actualizarse.
 
+**UI Delay**
 <img width="437" height="100" alt="image" src="https://github.com/user-attachments/assets/66741d51-dcbe-4144-9868-44938f42ef9d" />
 
 El otro agregado está sugerido dentro del proyecto que es justamente incluir logs centralizados. Mi idea era poder visualizar los logs de Kafka en tiempo real desde la pantalla por medio de WebSockets sin necesidad de polling. En este sentido, La API actúa como puente, recibiendo los mensajes del consumidor para luego retransmitirlos. Para esto agregué 3 secciones importantes en main.py, una tipo LogEvents que usa BaseModel, otra para el WebSocket tanto la parte del endpoint como el broadcast function y un HTTP bridge que reciba los logs desde LogEvent y espere el broadcast_log.
@@ -85,6 +86,7 @@ Los cambios en el consumer y el UI fueron bastante más concretos. Consumer.py i
 
 Para mantener la información de los clientes almacenada en la base de datos, los servicios de postgres y pgadmin llevan adjuntos volúmenes persistentes. Como nota adicional, me gustaría agregar que el comando <docker compose down -v> no solo se trae abajo todos los servicios de la infraestructura sino que también vacía la información almacenada dentro los volúmenes. Para dar los servicios de baja con los volúmenes intactos el comando es <docker compose down> sin el -v flag.
 
+**Docker Volumes**
 <img width="313" height="59" alt="image" src="https://github.com/user-attachments/assets/cbae4c5d-a1bf-4c01-a468-a4814d333200" />
 
 Uno de los problemas que tuve cuando reinicié los servicios fue que ahora era Kafka Consumer estaba entrando en "exit mode" con error "NoBrokerAvailable", parecía que se trataba de un problema de inicio y red donde Kafka estaba usando el mismo listener para la comunicación interna entre contenedores y el acceso externo desde el host, y aunque ya le había agregado listener mapping anteriormente, el producer y el consumer estaban iniciando antes de que el broker estuviera disponible. Hasta este momento mi Kafka listener era 9092, para corregirlo, agregué un segundo listener 29092 para el tráfico interno de Docker y dejé 9092 para el acceso externo. Para puertos secundarios lo convencional es usar 29092, 19092, 39092... Esto además de minimizar confusiones en el tráfico hace que los contenedores se comuniquen de forma segura dentro de la red de Docker y mantiene los accesos por separado. Luego de reconfigurar el listener mapping, también cambié el bootstrap server de mi producer y mi consumer de <bootstrap_servers="kafka:9092"> a <bootstrap_servers="kafka:29092">.
@@ -95,8 +97,9 @@ Uno de los problemas que tuve cuando reinicié los servicios fue que ahora era K
 El otro inconveniente fue propiamente el arranque de Kafka tras reinicios abruptos, ERROR Exiting Kafka due to fatal exception during startup, KeeperErrorCode = NodeExists. Los registros residuales y metadata temporal de Zookeeper impedían que Kafka pudiera registrar nuevamente el broker durante el start-up, la solución que encontré fue implementar políticas de reinicio <restart: unless-stopped> y healthcheks a Zookeeper, Kafka 
  y Postgres, y cambiar el depends on de los otros servicios a depends on: condition: service_healthy. Esto me garantiza una mayor estabilidad y mejor tolerancia ante fallos.
 
-**Healthcheck and Restart Policy**
+**Healthchecks and Restart Policy**
 <img width="1452" height="206" alt="image" src="https://github.com/user-attachments/assets/a8ad861e-8ca6-4aa4-aa81-78733da9e368" />
+
 <img width="539" height="134" alt="image" src="https://github.com/user-attachments/assets/cfb1b776-fc93-407b-8836-66ae4b0463ff" />
 
 
