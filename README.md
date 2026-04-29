@@ -89,10 +89,19 @@ Para mantener la información de los clientes almacenada en la base de datos, lo
 **Docker Volumes**
 <img width="313" height="59" alt="image" src="https://github.com/user-attachments/assets/cbae4c5d-a1bf-4c01-a468-a4814d333200" />
 
+<img width="892" height="225" alt="image" src="https://github.com/user-attachments/assets/4d693546-9070-444c-8254-0b568b651c71" />
+
+*NOTE:* Con el comando <docker volume prune> puedo eliminar volúmenes en desuso que no estén siendo utilizados por al menos un contenedor.
+
 Uno de los problemas que tuve cuando reinicié los servicios fue que ahora era Kafka Consumer estaba entrando en "exit mode" con error "NoBrokerAvailable", parecía que se trataba de un problema de inicio y red donde Kafka estaba usando el mismo listener para la comunicación interna entre contenedores y el acceso externo desde el host, y aunque ya le había agregado listener mapping anteriormente, el producer y el consumer estaban iniciando antes de que el broker estuviera disponible. Hasta este momento mi Kafka listener era 9092, para corregirlo, agregué un segundo listener 29092 para el tráfico interno de Docker y dejé 9092 para el acceso externo. Para puertos secundarios lo convencional es usar 29092, 19092, 39092... Esto además de minimizar confusiones en el tráfico hace que los contenedores se comuniquen de forma segura dentro de la red de Docker y mantiene los accesos por separado. Luego de reconfigurar el listener mapping, también cambié el bootstrap server de mi producer y mi consumer de <bootstrap_servers="kafka:9092"> a <bootstrap_servers="kafka:29092">.
 
 **Kafka Listener Mapping**
 <img width="712" height="352" alt="image" src="https://github.com/user-attachments/assets/ed506068-30fd-4c89-963d-4c4bb5c366c3" />
+
+**Kafka UI**
+<img width="1914" height="441" alt="image" src="https://github.com/user-attachments/assets/603aa598-439c-4246-a218-6c381b59b9f5" />
+
+*NOTA:* Kafka UI también usa 29092 como listener.
 
 El otro inconveniente fue propiamente el arranque de Kafka tras reinicios abruptos, ERROR Exiting Kafka due to fatal exception during startup, KeeperErrorCode = NodeExists. Los registros residuales y metadata temporal de Zookeeper impedían que Kafka pudiera registrar nuevamente el broker durante el start-up, la solución que encontré fue implementar políticas de reinicio <restart: unless-stopped> y healthcheks a Zookeeper, Kafka 
  y Postgres, y cambiar el depends on de los otros servicios a depends on: condition: service_healthy. Esto me garantiza una mayor estabilidad y mejor tolerancia ante fallos.
@@ -102,5 +111,16 @@ El otro inconveniente fue propiamente el arranque de Kafka tras reinicios abrupt
 
 <img width="1452" height="206" alt="image" src="https://github.com/user-attachments/assets/a8ad861e-8ca6-4aa4-aa81-78733da9e368" />
 
+En cuánto a redes se trata decidí incluir 2, una para el backend para servicios como PostgreSQL, Zookeeper, Kafka, producer/consumer, y otra para frontend donde va a estar el UI. Es importante tomar en cuenta que algunos servicios requieren acceso a ambas redes como lo es el servicio de API, Kafka UI y pgAdmin. Aunque kafka UI y pgadmin se inclinan más a ser servicios de backend, también tienen una interfaz que debe ser accesible para el usuario desde el navegador, pgadmin en http://localhost:8081/ y kafka UI en http://localhost:8082/.
+
+**Customized networks**
+<img width="291" height="106" alt="image" src="https://github.com/user-attachments/assets/9b19c226-4d26-4bc9-b429-5a21578e9a02" />
+
+<img width="923" height="200" alt="image" src="https://github.com/user-attachments/assets/7fcdff88-407f-4a65-b1a9-e5d9ea9964ea" />
+
+Se externalizaron además las variables sensibles y configuraciones de entorno mediante un .env file, evitando credenciales hardcodeadas dentro del docker compose. Las variables de ambiente las seccioné en  5 bloques: Postgres, pgAdmin, Kafka, API y UI respectivamente. El .env file debe ir al mismo nivel del docker compose en la estructura del proyecto.
+
+**Project Structure**
+<img width="297" height="171" alt="image" src="https://github.com/user-attachments/assets/ff8c90a5-fc82-49e6-af2a-3fb5568c0231" />
 
 
