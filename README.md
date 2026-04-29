@@ -93,7 +93,7 @@ Para mantener la información de los clientes almacenada en la base de datos, lo
 
 <img width="892" height="225" alt="image" src="https://github.com/user-attachments/assets/4d693546-9070-444c-8254-0b568b651c71" />
 
-___NOTE:___ Con el comando <docker volume prune> puedo eliminar volúmenes en desuso que no estén siendo utilizados por al menos un contenedor.
+___NOTA:___ Con el comando <docker volume prune> puedo eliminar volúmenes en desuso que no estén siendo utilizados por al menos un contenedor.
 
 Uno de los problemas que tuve cuando reinicié los servicios fue que ahora era Kafka Consumer estaba entrando en "exit mode" con error "NoBrokerAvailable", parecía que se trataba de un problema de inicio y red donde Kafka estaba usando el mismo listener para la comunicación interna entre contenedores y el acceso externo desde el host, y aunque ya le había agregado listener mapping anteriormente, el producer y el consumer estaban iniciando antes de que el broker estuviera disponible. Hasta este momento mi Kafka listener era 9092, para corregirlo, agregué un segundo listener 29092 para el tráfico interno de Docker y dejé 9092 para el acceso externo. Para puertos secundarios lo convencional es usar 29092, 19092, 39092... Esto además de minimizar confusiones en el tráfico hace que los contenedores se comuniquen de forma segura dentro de la red de Docker y mantiene los accesos por separado. Luego de reconfigurar el listener mapping, también cambié el bootstrap server de mi producer y mi consumer de <bootstrap_servers="kafka:9092"> a <bootstrap_servers="kafka:29092">.
 
