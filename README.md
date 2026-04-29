@@ -154,4 +154,4 @@ git push -u origin main
 
 ## Reflexión Final
 
-Este proyecto brindó experiencia práctica más allá de una simple contenerización, simulando patrones utilizados en entornos productivos. Fortaleció habilidades en Docker, redes, debugging, diseño de sistemas y orquestación de servicios, además de demostrar cómo se construyen y mantienen aplicaciones distribuidas modernas.
+Este proyecto me permitió adquirir experiencia práctica más allá de una simple contenerización, al trabajar con patrones y escenarios similares a los utilizados en entornos productivos. Durante el proceso fortalecí mis habilidades en Docker, redes, debugging, diseño de sistemas y orquestación de servicios, además de comprender mejor cómo se construyen, conectan y mantienen aplicaciones distribuidas modernas.
