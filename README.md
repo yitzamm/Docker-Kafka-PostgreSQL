@@ -59,12 +59,14 @@ A continuación, configuré Kafka, creé main.py, producer.py, consumer.py y el 
 
 **CORS error handling**
 <img width="553" height="265" alt="CORS error" src="https://github.com/user-attachments/assets/7a8ea4f4-f762-469d-95b6-c98aea17c200" />
+
 <img width="411" height="244" alt="image" src="https://github.com/user-attachments/assets/8ceacb80-fed0-489c-a2b6-d0b261c70d6c" />
 
 La primer mejora que le quería implementar al proyecto era permitir que el usuario pudiera agregar un cliente desde el UI, dejar que Kafka producer detectara el evento, creara el tópico, y que por último Kafka consumer actualizara la base de datos con el evento recibido. Para que funcionara necesitaba que la API pudiera leer desde la base de datos y enviarle eventos a producer.py. El problema era que el contenedor de producer hacía exit casi inmediatamente después de correr docker compose up. Ahora que producer no le estaba enviando data preescrita a consumer, ocupaba a los 2 siempre arriba y en "listening state". Producer debía escuchar a API y Consumer escuchar a Producer. Con eso en mente, reinventé la conexión a Kafka (con time sleep y retries) y ahora producer también depende de Kafka en el Docker Compose.
 
 **Docker Logs**
 <img width="1385" height="292" alt="image" src="https://github.com/user-attachments/assets/96fdea23-465c-44ab-bd3e-69dbf7db6764" />
+
 <img width="1349" height="162" alt="image" src="https://github.com/user-attachments/assets/53f5204f-473e-40bc-ad4c-dd2f6861c5e9" />
 
 *NOTA:* Kafka Consumer usa la modalidad "silently listening" a diferencia de producer quien se encuentra activamente enviando mensajes. Para acceder a los logs de consumer existe la opción de cambiar CMD a unbuffered mode desde el Dockerfile (CMD ["python", "-u", "consumer.py"]) o bien agregarle el -f flag de follow al docker logs command para mostrar los logs en tiempo real.
@@ -111,6 +113,7 @@ El otro inconveniente fue propiamente el arranque de Kafka tras reinicios abrupt
 
 <img width="1452" height="206" alt="image" src="https://github.com/user-attachments/assets/a8ad861e-8ca6-4aa4-aa81-78733da9e368" />
 
+
 En cuánto a redes se trata decidí incluir 2, una para el backend para servicios como PostgreSQL, Zookeeper, Kafka, producer/consumer, y otra para frontend donde va a estar el UI. Es importante tomar en cuenta que algunos servicios requieren acceso a ambas redes como lo es el servicio de API, Kafka UI y pgAdmin. Aunque kafka UI y pgadmin se inclinan más a ser servicios de backend, también tienen una interfaz que debe ser accesible para el usuario desde el navegador, pgadmin en http://localhost:8081/ y kafka UI en http://localhost:8082/.
 
 **Customized networks**
@@ -118,9 +121,35 @@ En cuánto a redes se trata decidí incluir 2, una para el backend para servicio
 
 <img width="923" height="200" alt="image" src="https://github.com/user-attachments/assets/7fcdff88-407f-4a65-b1a9-e5d9ea9964ea" />
 
-Se externalizaron además las variables sensibles y configuraciones de entorno mediante un .env file, evitando credenciales hardcodeadas dentro del docker compose. Las variables de ambiente las seccioné en  5 bloques: Postgres, pgAdmin, Kafka, API y UI respectivamente. El .env file debe ir al mismo nivel del docker compose en la estructura del proyecto.
+
+Se externalizaron además las variables sensibles y configuraciones de entorno mediante un .env file, evitando credenciales hardcodeadas dentro del docker compose. Las variables de ambiente las seccioné en  5 bloques: Postgres, pgAdmin, Kafka, API y UI respectivamente. El .env file debe ir al mismo nivel del docker compose en la estructura del proyecto, y .env debe aparecer enlistado dentro de .gitignore.
 
 **Project Structure**
 <img width="297" height="171" alt="image" src="https://github.com/user-attachments/assets/ff8c90a5-fc82-49e6-af2a-3fb5568c0231" />
 
+Para finalizar subí el proyecto terminado a GitHub:
 
+```
+git init
+git branch -M main
+git remote add origin URL
+# El README ya lo estaba trabajando en el repositorio en línea
+git pull origin main --allow-unrelated-histories
+git add .
+git commit -m "Initial upload of microservices lab project"
+git push -u origin main
+```
+
+## Lecciones Clave Aprendidas
+
+- Los microservicios requieren límites claros entre servicios y comunicación confiable entre contenedores.
+- Los health checks y políticas de reinicio mejoran significativamente la resiliencia del sistema.
+- Los volúmenes nombrados son esenciales para preservar datos persistentes.
+- Las redes personalizadas de Docker mejoran la organización y el aislamiento entre servicios.
+- Externalizar configuración mediante archivos .env mejora portabilidad y seguridad.
+- Las arquitecturas orientadas a eventos con Kafka desacoplan productores y consumidores de forma eficiente.
+- La resolución de problemas de infraestructura es una parte fundamental de los despliegues reales.
+
+## Reflexión Final
+
+Este proyecto brindó experiencia práctica más allá de una simple contenerización, simulando patrones utilizados en entornos productivos. Fortaleció habilidades en Docker, redes, debugging, diseño de sistemas y orquestación de servicios, además de demostrar cómo se construyen y mantienen aplicaciones distribuidas modernas.
