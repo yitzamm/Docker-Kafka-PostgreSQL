@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Microservices Project</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <h1>Proyecto de Microservicios</h1>
+    <p>
+      Sistema distribuido usando FastAPI, PostgreSQL, Kafka y un frontend en HTML/CSS/JS.
+      Permite crear, listar y eliminar clientes mediante arquitectura basada en eventos.
+    </p>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <div class="layout">
+
+    <!-- FORM -->
+    <div class="card form-card">
+      <h2>Agregar Cliente</h2>
+
+      <input id="nombre" placeholder="Nombre">
+      <input id="apellido" placeholder="Apellido">
+      <input id="edad" type="number" placeholder="Edad">
+      <input id="correo" placeholder="Correo">
+      <input id="telefono" placeholder="Teléfono">
+      <input id="direccion" placeholder="Dirección">
+
+      <button onclick="crearCliente()">Agregar Cliente</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card table-card">
+      <h2>Clientes</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Edad</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tabla"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- DELETE MODAL -->
+  <div id="deleteModal" class="modal hidden">
+    <div class="modal-content">
+      <p id="deleteMessage"></p>
+
+      <div class="modal-actions">
+        <button id="cancelDelete" class="btn-cancel">Cancelar</button>
+        <button id="confirmDelete" class="btn-confirm">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div id="editModal" class="modal hidden">
+    <div class="modal-content form-modal">
+
+      <h3>Editar Cliente</h3>
+
+      <input id="edit_nombre" placeholder="Nombre">
+      <input id="edit_apellido" placeholder="Apellido">
+      <input id="edit_edad" type="number" placeholder="Edad">
+      <input id="edit_correo" placeholder="Correo">
+      <input id="edit_telefono" placeholder="Teléfono">
+      <input id="edit_direccion" placeholder="Dirección">
+
+      <div class="modal-actions">
+        <button id="cancelEdit" class="btn-cancel">Volver</button>
+        <button id="confirmEdit" class="btn-confirm">Actualizar cliente</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LOG CONTAINER -->
+  <div id="kafkaLogs" class="log-panel">
+
+    <div class="log-header">
+      Kafka Logs
+    </div>
+
+    <div id="logContent"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
