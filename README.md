@@ -113,6 +113,7 @@ El otro inconveniente fue propiamente el arranque de Kafka tras reinicios abrupt
 
 <img width="1452" height="206" alt="image" src="https://github.com/user-attachments/assets/a8ad861e-8ca6-4aa4-aa81-78733da9e368" />
 
+<br>
 
 En cuánto a redes se trata decidí incluir 2, una para el backend para servicios como PostgreSQL, Zookeeper, Kafka, producer/consumer, y otra para frontend donde va a estar el UI. Es importante tomar en cuenta que algunos servicios requieren acceso a ambas redes como lo es el servicio de API, Kafka UI y pgAdmin. Aunque kafka UI y pgadmin se inclinan más a ser servicios de backend, también tienen una interfaz que debe ser accesible para el usuario desde el navegador, pgadmin en http://localhost:8081/ y kafka UI en http://localhost:8082/.
 
@@ -121,6 +122,7 @@ En cuánto a redes se trata decidí incluir 2, una para el backend para servicio
 
 <img width="923" height="200" alt="image" src="https://github.com/user-attachments/assets/7fcdff88-407f-4a65-b1a9-e5d9ea9964ea" />
 
+<br>
 
 Se externalizaron además las variables sensibles y configuraciones de entorno mediante un .env file, evitando credenciales hardcodeadas dentro del docker compose. Las variables de ambiente las seccioné en  5 bloques: Postgres, pgAdmin, Kafka, API y UI respectivamente. El .env file debe ir al mismo nivel del docker compose en la estructura del proyecto, y .env debe aparecer enlistado dentro de .gitignore.
 
