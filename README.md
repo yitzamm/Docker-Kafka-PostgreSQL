@@ -62,6 +62,8 @@ A continuación creé main.py, producer.py, consumer.py y el UI folder (html, cs
 
 <img width="411" height="244" alt="image" src="https://github.com/user-attachments/assets/8ceacb80-fed0-489c-a2b6-d0b261c70d6c" />
 
+<br>
+
 La primer mejora a implementar era permitir que el usuario pudiera agregar un cliente desde el UI, dejar que Kafka producer detectara el evento, creara el tópico, y que por último Kafka consumer actualizara la base de datos con el evento recibido. Para que funcionara necesitaba que la API pudiera leer desde la base de datos y enviarle eventos a producer.py. El problema era que el contenedor de producer hacía exit casi inmediatamente después de correr compose up. Ahora que producer no le estaba enviando data preescrita a consumer, ocupaba a los 2 siempre arriba y en "listening state". Producer debía escuchar a API y Consumer a Producer. Con eso en mente, reinventé la conexión a Kafka con time sleep y retries, y la dependencia de producer con respecto a Kafka en el docker compose.
 
 **Docker Logs**
